@@ -7,25 +7,19 @@
 		public $db_password;
 		public $db_name;
 		public $table;
-		public $result_as_object;
-		public $error;
-		public $supress;
-		public $query;
 		
-		private $last_row;
-		private $last_result;
-		private $result_count;
+		private $query_string = null;
 				
 		protected static $link;
 		protected static $_instance;
 		protected $query_obj;
 		protected $factory = null;
+		protected $handler = null;
 		
 		
 		public function __construct($args = null){
 			
 			if(false === isset(self::$_instance)){
-				
 				if(false === is_null($args)){
 					$this->db_password = $args['password'];
 					$this->db_host = $args['host'];
@@ -38,20 +32,6 @@
 				}catch(PDOException $e){
 					echo $e->getMessage();
 				}
-				
-				/*self::$link = mysql_pconnect($this->db_host, $this->db_username, $this->db_password);
-				
-				if(self::$link){
-				
-					$result = mysql_select_db($this->db_name, self::$link);
-					
-				}else {
-				
-					$this->displayError("Fatal Error: Could not select the database.");
-					
-				}
-				
-				return $this;*/
 			}else {
 				return self::$_instance;
 			}
@@ -67,89 +47,64 @@
 			return self::$_instance;
 		
 		}
-		
-		public function test(){
-		
-			return isset(self::$_instance);
 			
-		}
+		protected function query(){
 			
-		protected function query($qstring){
-			
-			$this->handler = $this->factory->prepare($qstring);
-			$this->handler->execute();
-			
-			
-			
-			/*
-$this->last_result = mysql_query($qstring, self::$link);
-			$this->result_count = mysql_num_rows($this->last_result);
-			$this->last_row = mysql_fetch_assoc($this->last_result);
-			$this->query = $qstring;
-
-			if(!$this->last_row){
-			
-				//$this->displayError("\nError: Could not query the database.", $qstring);
-				
-			}
-*/		
+			$this->handler = $this->factory->prepare($this->query_string);
 					
-		}
-		
-		public function numresults($qstring){
-
-			//$this->query($q);
-			
-			return mysql_num_rows($this->last_result);
-		
 		}
 		
 		protected function as_array(){
 			
-			return $this->handler->fetch();
+			$this->handler->setFetchMode(PDO::FETCH_ASSOC);
+			$this->handler->execute();
 			
-			/*
-			$array[] = $this->last_row;
+			$return = array();
+			$i = 0;
 			
-			if($this->last_result){
+			while($row = $this->handler->fetch()){
+				$return[$i] = $row;
 				
-				while($row = mysql_fetch_assoc($this->last_result)){
+				$i++;
+			}
+			
+			return $return;
 					
-					$array[] = $row;
-					
-				}
-				
-				return $array;
-				
-				mysql_free_result($this->last_result);
+		}
 		
-			}else {
-				
-				if(!$this->supress){
-				
-					$this->displayError("Warning: Query string was empty.");
-					
-				}
+		public function as_object(){
 			
-			}*/
+			$this->handler->setFetchMode(PDO::FETCH_OBJ);
+			$this->handler->execute();
+			
+			$return = new stdClass();
+			$i = 0;
+			
+			while($row = $this->handler->fetch()){
+				$return->$i = $row;
+				
+				$i++;
+			}
+			
+			return $return;
 			
 		}
 		
-		public function query_as_array($q){
-		
-			$this->query($q);
+		public function query_as_array($query_string){
+			
+			$this->query_string = $query_string;
+			$this->query();
+			
 			return $this->as_array();
-			//should close the conn here
 		
 		}
 		
-		//alt cuz I'm too lazy to write "query_as_array" every time...
-		
-		public function q($q){
-		
-			$this->query($q);
-			return $this->as_array();
-			//should close the conn here
+		public function query_as_object($query_string){
+			
+			$this->query_string = $query_string;
+			$this->query($query_string);
+			
+			return $this->as_object();
 		
 		}
 		
@@ -195,20 +150,6 @@ $this->last_result = mysql_query($qstring, self::$link);
 		
 		}
 		
-		public function as_obj($result){
-			
-			if(!empty($result)){
-			
-				$this->mysql_fetch_object($result);
-		
-			}else {
-			
-				$this->displayError("Warning: Query string was empty.");
-			
-			}
-			
-		}
-		
 		private function displayError($message = false, $query = false){
 		
 			if($message){
@@ -235,6 +176,12 @@ $this->last_result = mysql_query($qstring, self::$link);
 		private function sqlError($query){
 		
 			$this->error = $query;
+		
+		}
+		
+		public function __destruct(){
+		
+			$this->factory = null;
 		
 		}
 		
