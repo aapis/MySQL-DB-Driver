@@ -6,17 +6,19 @@
 		public $db_username;
 		public $db_password;
 		public $db_name;
-		public $table;
 		
 		private $query_string = null;
 				
-		protected static $link;
-		protected static $_instance;
-		protected $query_obj;
+		protected static $link = null;
+		protected static $_instance = null;
+		
 		protected $factory = null;
 		protected $handler = null;
 		
 		
+		/*
+		 * Initialize the connection if required, return the instance if not
+		 */
 		public function __construct($args = null){
 			
 			if(false === isset(self::$_instance)){
@@ -37,6 +39,10 @@
 			}
 		}
 		
+		/*
+		 * Initialize the connection if required, return the instance if not
+		 * NOTE: this may be removed in later versions
+		 */
 		public static function init($args = null){
 			
 			if(false === isset(self::$_instance)){
@@ -47,14 +53,20 @@
 			return self::$_instance;
 		
 		}
-			
-		protected function query(){
+		
+		/*
+		 * Prepare the query
+		 */	
+		protected function _query(){
 			
 			$this->handler = $this->factory->prepare($this->query_string);
 					
 		}
 		
-		protected function as_array(){
+		/*
+		 * Parse a query result into an array we can use
+		 */
+		protected function _as_array(){
 			
 			$this->handler->setFetchMode(PDO::FETCH_ASSOC);
 			$this->handler->execute();
@@ -72,7 +84,10 @@
 					
 		}
 		
-		public function as_object(){
+		/*
+		 * Parse a query result into an object we can use
+		 */
+		protected function _as_object(){
 			
 			$this->handler->setFetchMode(PDO::FETCH_OBJ);
 			$this->handler->execute();
@@ -90,98 +105,49 @@
 			
 		}
 		
-		public function query_as_array($query_string){
+		/*
+		 * Run the query and return an array
+		 */
+		public function query_as_array($query_string = null){
 			
 			$this->query_string = $query_string;
-			$this->query();
+			$this->_query();
 			
-			return $this->as_array();
+			return $this->_as_array();
 		
 		}
 		
-		public function query_as_object($query_string){
+		/*
+		 * Run the query and return an object
+		 */
+		public function query_as_object($query_string = null){
 			
 			$this->query_string = $query_string;
-			$this->query($query_string);
+			$this->_query($query_string);
 			
-			return $this->as_object();
+			return $this->_as_object();
 		
 		}
 		
-		public function insert($qstring){
-		
-			if(!mysql_query($qstring)){
-				
-				if(!$this->supress){
-					
-					$this->displayError("Warning: Query string was empty.", $qstring);
-					
-				}
-				
-			}
-		
-		}
-		
-		public function update($qstring){
-		
-			if(!mysql_query($qstring)){
-				
-				if(!$this->supress){
-				
-					$this->displayError("Warning: Query string was empty.", $qstring);
-					
-				}
-				
-			}
-		
-		}
-		
-		public function delete($qstring){
-		
-			if(!mysql_query($qstring)){
-				
-				if(!$this->supress){
-				
-					$this->displayError("Warning: Query string was empty.", $qstring);
-					
-				}
-				
-			}
-		
-		}
-		
-		private function displayError($message = false, $query = false){
-		
-			if($message){
-				
-				$message ."<br />";
-				echo $query;
-					
-					if(!$this->last_row){
-					
-						$message .= "<p>Query: ". stripslashes($query) ."<p>";
-					
-					}
-				
-				echo $message;
-				
-			}else {
+		/*
+		 * Run boolean queries (insert, delete, etc)
+		 */
+		public function run($query_string = null){
 			
-				die("Fatal Error: Could not connect to the database.");
-				
-			}
-		
-		}
-		
-		private function sqlError($query){
-		
-			$this->error = $query;
+			$this->query_string = $query_string;
+			$this->_query($query_string);
+			
+			$result = $this->handler->execute();
+			
+			return $result;
 		
 		}
 		
 		public function __destruct(){
 		
 			$this->factory = null;
+			$this->handler = null;
+			$this->query_string = null;
 		
 		}
 		
