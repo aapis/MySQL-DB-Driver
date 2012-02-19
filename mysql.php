@@ -8,8 +8,7 @@
 		public $db_name;
 		
 		private $query_string = null;
-				
-		protected static $link = null;
+		
 		protected static $_instance = null;
 		
 		protected $factory = null;
@@ -41,7 +40,7 @@
 		
 		/*
 		 * Initialize the connection if required, return the instance if not
-		 * NOTE: this may be removed in later versions
+		 * NOTE: to be removed in later versions
 		 */
 		public static function init($args = null){
 			
@@ -52,6 +51,10 @@
 			
 			return self::$_instance;
 		
+		}
+		
+		public function instance(){
+			return self::$_instance;
 		}
 		
 		/*
