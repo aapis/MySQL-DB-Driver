@@ -26,6 +26,8 @@
 					$this->db_host = $args['host'];
 					$this->db_username = $args['user'];
 					$this->db_name = $args['database'];
+				}else {
+					die('Connection arguments are missing');
 				}
 				
 				try {
