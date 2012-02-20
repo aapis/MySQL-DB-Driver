@@ -36,7 +36,7 @@
 					echo $e->getMessage();
 				}
 			}else {
-				return self::$_instance;
+				return self::$_instance; 
 			}
 		}
 		

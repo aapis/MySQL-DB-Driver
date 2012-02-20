@@ -9,7 +9,7 @@
 		'database' => 'mysql_driver_test'
 	);
 	
-	$db = Database::init($args);
+	$db = Database::init($args); 
 	
 	$users = $db->query_as_object('SELECT * FROM users');
 	
