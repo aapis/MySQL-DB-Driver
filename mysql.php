@@ -55,6 +55,10 @@
 		
 		}
 		
+		/*
+		 * Debug the instance variable
+		 * NOTE: to be removed in later versions
+		 */
 		public function instance(){
 			return self::$_instance;
 		}
