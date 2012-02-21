@@ -4,7 +4,7 @@
 	
 	$args = array(
 		'user' => 'root',
-		'password' => '',
+		'password' => 'mydbpassword',
 		'host' => 'localhost',
 		'database' => 'mysql_driver_test'
 	);
@@ -12,7 +12,7 @@
 	$db = Database::init($args); 
 	
 	$users = $db->query_as_object('SELECT * FROM users');
-	
+	$db->run('INSERT INTO users(name, age) VALUES("john", 25)');
 	
 ?>
 <head>

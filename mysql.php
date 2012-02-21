@@ -17,6 +17,7 @@
 		
 		/*
 		 * Initialize the connection if required, return the instance if not
+		 * NOTE: needs to be refactored
 		 */
 		public function __construct($args = null){
 			
@@ -56,18 +57,11 @@
 		}
 		
 		/*
-		 * Debug the instance variable
-		 * NOTE: to be removed in later versions
-		 */
-		public function instance(){
-			return self::$_instance;
-		}
-		
-		/*
 		 * Prepare the query
 		 */	
 		protected function _query(){
 			
+			$this->handler = null;
 			$this->handler = $this->factory->prepare($this->query_string);
 					
 		}
@@ -132,7 +126,7 @@
 		public function query_as_object($query_string = null){
 			
 			$this->query_string = $query_string;
-			$this->_query($query_string);
+			$this->_query();
 			
 			return $this->_as_object();
 		
@@ -144,14 +138,17 @@
 		public function run($query_string = null){
 			
 			$this->query_string = $query_string;
-			$this->_query($query_string);
+			$this->_query();
 			
-			$result = $this->handler->execute();
+			$this->handler->execute();
 			
-			return $result;
+			$this->handler = null;
 		
 		}
 		
+		/*
+		 * Kill it with fire
+		 */
 		public function __destruct(){
 		
 			$this->factory = null;
