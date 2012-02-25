@@ -60,10 +60,9 @@
 		 * Prepare the query
 		 */	
 		protected function _query(){
-			
-			$this->handler = null;
+				
 			$this->handler = $this->factory->prepare($this->query_string);
-					
+			
 		}
 		
 		/*
@@ -137,12 +136,14 @@
 		 */
 		public function run($query_string = null){
 			
-			$this->query_string = $query_string;
+			die("I'm broken.");
+			
+			/*$this->query_string = $query_string;
 			$this->_query();
 			
 			$this->handler->execute();
 			
-			$this->handler = null;
+			$this->handler = null;*/
 		
 		}
 		

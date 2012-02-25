@@ -20,8 +20,10 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <title>MySQL Database Driver Test</title>
   <meta name="description" content="">
-
   <meta name="viewport" content="width=device-width">
+  <style>
+  	body {font-family: Courier; background: #000; color: #8b9f64; padding: 20px;}
+  </style>
 
 </head>
 <body>
