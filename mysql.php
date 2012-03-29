@@ -27,23 +27,21 @@
 			 * Initialize the connection if required, return the instance if not
 			 * TODO: refactor
 			 */
-			private function __construct($args = null){
+			private function __construct($args = array()){
 				
 				if(false === isset(self::$_instance)){
-					if(false === is_null($args)){
-						$this->db_password = $args['password'];
-						$this->db_host = $args['host'];
-						$this->db_username = $args['user'];
-						$this->db_name = $args['database'];
-					}else {
-						die('Connection arguments are missing');
-					}
+					
+					$this->db_password = $args['password'];
+					$this->db_host = $args['host'];
+					$this->db_username = $args['user'];
+					$this->db_name = $args['database'];
 					
 					try {
 						$this->factory = new PDO("mysql:host=$this->db_host;dbname=$this->db_name", $this->db_username, $this->db_password);
 					}catch(PDOException $e){
 						self::Error($e->getMessage());
 					}
+					
 				}else {
 					return self::$_instance; 
 				}
