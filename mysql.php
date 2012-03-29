@@ -1,7 +1,11 @@
 <?php
+	/*
+	 * Requires PHP::PDO to be enabled
+	 */
 
-	class Database {
+	class MA_Database {
 		
+		// Class variables
 		public $db_host;
 		public $db_username;
 		public $db_password;
@@ -13,13 +17,16 @@
 		
 		protected $factory = null;
 		protected $handler = null;
-		
+
+		// Constants
+		const MA_COULD_NOT_INSTANTIATE = 'Missing required arguments for MA_Database instantiation.';
+		const MA_FATAL_ERROR = 'You done goofed.';
 		
 		/*
 		 * Initialize the connection if required, return the instance if not
-		 * NOTE: needs to be refactored
+		 * TODO: refactor
 		 */
-		public function __construct($args = null){
+		private function __construct($args = null){
 			
 			if(false === isset(self::$_instance)){
 				if(false === is_null($args)){
@@ -34,7 +41,7 @@
 				try {
 					$this->factory = new PDO("mysql:host=$this->db_host;dbname=$this->db_name", $this->db_username, $this->db_password);
 				}catch(PDOException $e){
-					echo $e->getMessage();
+					self::Error($e->getMessage());
 				}
 			}else {
 				return self::$_instance; 
@@ -43,13 +50,18 @@
 		
 		/*
 		 * Initialize the connection if required, return the instance if not
-		 * NOTE: to be removed in later versions
+		 * @return object
 		 */
-		public static function init($args = null){
+		public static function init($args = array()){
 			
 			if(false === isset(self::$_instance)){
 				$class = __CLASS__;
-				self::$_instance = new $class($args);
+
+				if(false === empty($args)){
+					self::$_instance = new $class($args);
+				}else {
+					self::Error(self::MA_COULD_NOT_INSTANTIATE);
+				}
 			}
 			
 			return self::$_instance;
@@ -58,15 +70,17 @@
 		
 		/*
 		 * Prepare the query
+		 * @return void
 		 */	
 		protected function _query(){
 				
-			$this->handler = $this->factory->prepare($this->query_string);
+			$this->handler = $this->factory->prepare($this->query_string, array(PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL));
 			
 		}
 		
 		/*
 		 * Parse a query result into an array we can use
+		 * @return array
 		 */
 		protected function _as_array(){
 			
@@ -88,6 +102,7 @@
 		
 		/*
 		 * Parse a query result into an object we can use
+		 * @return object
 		 */
 		protected function _as_object(){
 			
@@ -109,6 +124,7 @@
 		
 		/*
 		 * Run the query and return an array
+		 * @return array
 		 */
 		public function query_as_array($query_string = null){
 			
@@ -121,6 +137,7 @@
 		
 		/*
 		 * Run the query and return an object
+		 * @return object
 		 */
 		public function query_as_object($query_string = null){
 			
@@ -133,18 +150,34 @@
 		
 		/*
 		 * Run boolean queries (insert, delete, etc)
+		 * @return bool
 		 */
 		public function run($query_string = null){
 			
-			die("I'm broken.");
-			
-			/*$this->query_string = $query_string;
+			$this->query_string = $query_string;
 			$this->_query();
 			
 			$this->handler->execute();
-			
-			$this->handler = null;*/
+			$this->handler->closeCursor();
 		
+		}
+
+		/*
+		 * Display errors as obnoxiously as possible
+		 * @return void
+		 */
+		private function Error(){
+
+			$errors = func_get_args();
+
+			if(false === empty($errors)){
+				foreach($errors as $error){
+					echo '<h3>'. $error .'</h3>';
+				}
+			}
+
+			die();
+
 		}
 		
 		/*

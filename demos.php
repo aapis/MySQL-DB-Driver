@@ -1,5 +1,9 @@
 <?php
-
+	
+	//set error reporting
+	ini_set('display_errors', 1);
+	
+	//setup app
 	require_once('mysql.php');
 	
 	$args = array(
@@ -9,10 +13,11 @@
 		'database' => 'mysql_driver_test'
 	);
 	
-	$db = Database::init($args); 
+	$foop = array();
+	$db = MA_Database::init($args); 
 	
-	$users = $db->query_as_object('SELECT * FROM users');
-	$db->run('INSERT INTO users(name, age) VALUES("john", 25)');
+	$users = $db->query_as_object('SELECT * FROM users order by id ASC');
+	//$db->run('INSERT INTO users(name, age) VALUES("shi", 25)');
 	
 ?>
 <head>
