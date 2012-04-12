@@ -13,11 +13,13 @@
 		'database' => 'mysql_driver_test'
 	);
 	
-	$foop = array();
 	$db = MA_Database::init($args); 
 	
+	//Example of a boolean query (INSERT, DELETE, TRUNCATE, etc)
+	//$db->run('INSERT INTO users(name, age) VALUES("marz barz", 25)');
+
+	//Example of a query that returns a result
 	$users = $db->query_as_object('SELECT * FROM users order by id ASC');
-	//$db->run('INSERT INTO users(name, age) VALUES("shi", 25)');
 	
 ?>
 <head>
@@ -27,7 +29,10 @@
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width">
   <style>
-  	body {font-family: Courier; background: #000; color: #8b9f64; padding: 20px;}
+  	* {margin: 0px; padding: 0px;}
+  	body {font-family: Courier; background: #000; color: #ccc; padding: 20px;}
+  	table {margin: auto;}
+  	.user-message {background: #B03060; color: #fff; padding: 10px; border-radius: 10px; text-shadow: 1px 1px 1px #000; margin-bottom: 20px;}
   </style>
 
 </head>
@@ -35,7 +40,7 @@
   <header>
 	<h1>MySQL Database Driver Test</h1>
   </header>
-  <div role="main">
+  <div id="main" role="main">
   	<table align="center">
   		<tr>
 	  		<th>ID</th>

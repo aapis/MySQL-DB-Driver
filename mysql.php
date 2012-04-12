@@ -14,7 +14,7 @@
 			
 			private $query_string = null;
 			
-			protected static $_instance = null;
+			private static $_instance = null;
 			
 			protected $factory = null;
 			protected $handler = null;
@@ -59,7 +59,7 @@
 					if(false === empty($args)){
 						self::$_instance = new $class($args);
 					}else {
-						self::Error(self::MA_COULD_NOT_INSTANTIATE);
+						self::Message('error', self::MA_COULD_NOT_INSTANTIATE);
 					}
 				}
 				
@@ -71,7 +71,7 @@
 			 * Prepare the query
 			 * @return void
 			 */	
-			protected function _query(){
+			private function _query(){
 					
 				$this->handler = $this->factory->prepare($this->query_string, array(PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL));
 				
@@ -81,7 +81,7 @@
 			 * Parse a query result into an array we can use
 			 * @return array
 			 */
-			protected function _as_array(){
+			private function _as_array(){
 				
 				$this->handler->setFetchMode(PDO::FETCH_ASSOC);
 				$this->handler->execute();
@@ -103,7 +103,7 @@
 			 * Parse a query result into an object we can use
 			 * @return object
 			 */
-			protected function _as_object(){
+			private function _as_object(){
 				
 				$this->handler->setFetchMode(PDO::FETCH_OBJ);
 				$this->handler->execute();
@@ -154,16 +154,18 @@
 			public function run($query_string = null){
 				
 				$this->query_string = $query_string;
-				$this->_query();
-				
-				$this->handler->execute();
-				$this->handler->closeCursor();
+
+				$result = $this->factory->exec($query_string);
+
+				if($result === 0){
+					self::Message('warning', 'Query failed to run, 0 results.', $query_string);
+				}
 			
 			}
 
 			/*
 			 * Display errors as obnoxiously as possible
-			 * @return void
+			 * @return string
 			 */
 			private function Error(){
 
@@ -176,6 +178,42 @@
 				}
 
 				die();
+
+			}
+
+			/*
+			 * Display warnings to the user
+			 * @return string
+			 */
+			private function Warning(){
+
+				$warnings = func_get_args();
+
+				if(false === empty($warnings)){
+					echo '<div class="user-message warning">';
+						foreach($warnings as $warning){
+							echo '<h3>'. $warning .'</h3>';
+						}
+					echo '</div>';
+				}
+
+			}
+
+			/*
+			 * Display messages to the user
+			 * @return string
+			 */
+			public function Message($type = 'error', $message = null, $query_string = null){
+
+				switch($type){
+					case 'error': 
+						self::Error($message, $query_string);
+					break;
+
+					case 'warning':
+						self::Warning($message, $query_string);
+					break;
+				}
 
 			}
 			
