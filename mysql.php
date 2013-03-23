@@ -23,12 +23,11 @@
 			const MA_COULD_NOT_INSTANTIATE = 'Missing required arguments for MA_Database instantiation.';
 			//const MA_FATAL_ERROR = 'You done goofed.'; //not used yet
 			
-			/*
+			/**
 			 * Initialize the connection if required, return the instance if not
 			 * TODO: refactor
 			 */
 			private function __construct($args = array()){
-				
 				if(false === isset(self::$_instance)){
 					
 					$this->db_password = $args['password'];
@@ -39,7 +38,7 @@
 					try {
 						$this->factory = new PDO("mysql:host=$this->db_host;dbname=$this->db_name", $this->db_username, $this->db_password);
 					}catch(PDOException $e){
-						self::Error($e->getMessage());
+						MA_ErrorHandler::Message('error', $e->getMessage());
 					}
 					
 				}else {
@@ -47,42 +46,37 @@
 				}
 			}
 			
-			/*
+			/**
 			 * Initialize the connection if required, return the instance if not
 			 * @return object
 			 */
-			public static function init($args = array()){
-				
+			public static function getInstance($args = array()){
 				if(false === isset(self::$_instance)){
 					$class = __CLASS__;
 
 					if(false === empty($args)){
 						self::$_instance = new $class($args);
 					}else {
-						self::Message('error', self::MA_COULD_NOT_INSTANTIATE);
+						MA_ErrorHandler::Message('error', self::MA_COULD_NOT_INSTANTIATE);
 					}
 				}
 				
 				return self::$_instance;
-			
 			}
 			
-			/*
-			 * Prepare the query
+			/**
+			 * Prepare the query, set $this->handler for use in other methods
 			 * @return void
 			 */	
 			private function _query(){
-					
 				$this->handler = $this->factory->prepare($this->query_string, array(PDO::ATTR_CURSOR => PDO::CURSOR_SCROLL));
-				
 			}
 			
-			/*
+			/**
 			 * Parse a query result into an array we can use
 			 * @return array
 			 */
 			private function _as_array(){
-				
 				$this->handler->setFetchMode(PDO::FETCH_ASSOC);
 				$this->handler->execute();
 				
@@ -95,116 +89,107 @@
 					$i++;
 				}
 				
+				//return (empty($return) ? false : $return);
 				return $return;
-						
 			}
 			
-			/*
+			/**
 			 * Parse a query result into an object we can use
 			 * @return object
 			 */
 			private function _as_object(){
-				
 				$this->handler->setFetchMode(PDO::FETCH_OBJ);
 				$this->handler->execute();
 				
 				$return = new stdClass();
 				$i = 0;
-				
+
 				while($row = $this->handler->fetch()){
 					$return->$i = $row;
 					
 					$i++;
 				}
 				
+				//return (empty($return) ? false : $return);
 				return $return;
-				
 			}
 			
-			/*
+			/**
 			 * Run the query and return an array
 			 * @return array
+			 * 
+			 * @deprecated, use load methods instead
 			 */
 			public function query_as_array($query_string = null){
-				
+				MA_ErrorHandler::Message('warning', 'MA_Database::query_as_array has been deprecated');
+
+				$this->loadArrayList($query_string);
+			}
+
+			/**
+			 * Run the query and return an object
+			 * @return object
+			 *
+			 * @deprecated, use load methods instead
+			 */
+			public function query_as_object($query_string = null){
+				MA_ErrorHandler::Message('warning', 'MA_Database::query_as_object has been deprecated');
+
+				$this->loadObjectList($query_string);
+			}
+
+
+			/**
+			 * [loadArrayList Return an array of arrays]
+			 * @param  [type] $query_string [description]
+			 * @return [type]               [description]
+			 */
+			public function loadArrayList($query_string = null){
 				$this->query_string = $query_string;
 				$this->_query();
 				
 				return $this->_as_array();
-			
 			}
-			
-			/*
-			 * Run the query and return an object
-			 * @return object
+
+			/**
+			 * [loadObjectList Return a list of objects]
+			 * @param  [type] $query_string [description]
+			 * @return [type]               [description]
 			 */
-			public function query_as_object($query_string = null){
-				
+			public function loadObjectList($query_string = null){
 				$this->query_string = $query_string;
 				$this->_query();
 				
 				return $this->_as_object();
-			
 			}
 			
-			/*
+			/**
 			 * Run boolean queries (insert, delete, etc)
 			 * @return bool
 			 */
 			public function run($query_string = null){
-				
 				$this->query_string = $query_string;
 
 				$result = $this->factory->exec($query_string);
 
 				if($result === 0){
-					self::Message('warning', 'Query failed to run, 0 results.', $query_string);
+					MA_ErrorHandler::Message('warning', 'Query failed to run, 0 results.', $query_string);
 				}
+			}
 			
-			}
+		} //end class
 
-			/*
-			 * Display errors as obnoxiously as possible
-			 * @return string
-			 */
-			private function Error(){
-
-				$errors = func_get_args();
-
-				if(false === empty($errors)){
-					foreach($errors as $error){
-						echo '<h3>'. $error .'</h3>';
-					}
-				}
-
-				die();
-
-			}
-
-			/*
-			 * Display warnings to the user
-			 * @return string
-			 */
-			private function Warning(){
-
-				$warnings = func_get_args();
-
-				if(false === empty($warnings)){
-					echo '<div class="user-message warning">';
-						foreach($warnings as $warning){
-							echo '<h3>'. $warning .'</h3>';
-						}
-					echo '</div>';
-				}
-
-			}
-
-			/*
+		/**
+		 * Class: MA_ErrorHandler
+		 * 
+		 * Error handling for MA_Database
+		 */
+		abstract class MA_ErrorHandler {
+			/**
 			 * Display messages to the user
 			 * @return string
 			 */
-			public function Message($type = 'error', $message = null, $query_string = null){
-
+			public static function Message($type = 'error', $message = null, $query_string = null){
 				switch($type){
 					case 'error': 
 						self::Error($message, $query_string);
@@ -214,21 +199,42 @@
 						self::Warning($message, $query_string);
 					break;
 				}
+			}
 
-			}
-			
-			/*
-			 * Kill it with fire
+			/**
+			 * Display errors as obnoxiously as possible
+			 * @return string
 			 */
-			public function __destruct(){
-			
-				$this->factory = null;
-				$this->handler = null;
-				$this->query_string = null;
-			
+			private function Error(){
+				$errors = func_get_args();
+
+				if(false === empty($errors)){
+					echo '<div class="user-message error">';
+						foreach($errors as $error){
+							echo '<h3>'. $error .'</h3>';
+						}
+					echo '</div>';
+				}
+
+				die();
 			}
-			
-		} //end class
+
+			/**
+			 * Display warnings to the user
+			 * @return string
+			 */
+			private function Warning(){
+				$warnings = func_get_args();
+
+				if(false === empty($warnings)){
+					echo '<div class="user-message warning">';
+						foreach($warnings as $warning){
+							echo '<h3>'. $warning .'</h3>';
+						}
+					echo '</div>';
+				}
+			}
+		}
 
 	}else {
 		die('This class requires the PDO extension.  See <a href="http://php.net/manual/en/pdo.installation.php">this guide</a> to enable it.');

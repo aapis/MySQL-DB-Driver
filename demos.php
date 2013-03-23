@@ -13,15 +13,17 @@
 		'database' => 'mysql_driver_test'
 	);
 	
-	$db = MA_Database::init($args); 
+	$db = MA_Database::getInstance($args); 
 	
 	//Example of a boolean query (INSERT, DELETE, TRUNCATE, etc)
 	//$db->run('INSERT INTO users(name, age) VALUES("marz barz", 25)');
 
 	//Example of a query that returns a result
-	$users = $db->query_as_object('SELECT * FROM users order by id ASC');
+	$users = $db->loadObjectList('SELECT * FROM users order by id ASC');
 	
 ?>
+<!doctype html>
+<html>
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -47,13 +49,17 @@
 	  		<th>Name</th>
 	  		<th>Age</th>
 	  	</tr>
-		<?php foreach($users as $user): ?>
-			<tr>
-	  			<td><?php echo $user->id; ?></td>
-	  			<td><?php echo $user->name; ?></td>
-	  			<td><?php echo $user->age; ?></td>
-	  		</tr>
-		<?php endforeach; ?>
+	  	<?php if($users): ?>
+			<?php foreach($users as $user): ?>
+				<tr>
+		  			<td><?php echo $user->id; ?></td>
+		  			<td><?php echo $user->name; ?></td>
+		  			<td><?php echo $user->age; ?></td>
+		  		</tr>
+			<?php endforeach; ?>
+		<?php else : ?>
+			<p>Nope</p>
+		<?php endif; ?>
 	</table>
   </div>
   <footer>
