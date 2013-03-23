@@ -123,7 +123,7 @@
 			public function query_as_array($query_string = null){
 				MA_ErrorHandler::Message('warning', 'MA_Database::query_as_array has been deprecated');
 
-				$this->loadArrayList($query_string);
+				return $this->loadArrayList($query_string);
 			}
 
 			/**
@@ -135,7 +135,7 @@
 			public function query_as_object($query_string = null){
 				MA_ErrorHandler::Message('warning', 'MA_Database::query_as_object has been deprecated');
 
-				$this->loadObjectList($query_string);
+				return $this->loadObjectList($query_string);
 			}
 
 
