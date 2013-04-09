@@ -20,8 +20,8 @@
 
 	//Example of a query that returns a result
 	$users = $db->loadObjectList('SELECT * FROM users order by id ASC');
-	
 ?>
+
 <!doctype html>
 <html>
 <head>
